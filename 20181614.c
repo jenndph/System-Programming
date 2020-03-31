@@ -5,84 +5,83 @@ char* regular_form(char* str);
 int main(){
     char strTmp[30], strSave[30];
     char* command;
-    char *start, *end;
+    char *start, *end, *addr, *val;
     int cCase;
 
     hisCnt = 1;
     hisHead = NULL;
 
+    addrSave = 0;
+    for(int i=0; i<65536; i++)
+        for(int j=0; j<16; j++)
+            dumpMem[i][j] = 0x00;
+
     while(1){
         printf("sicsim> ");
         fgets(strTmp, sizeof(strTmp), stdin); 
-        regular_form(strTmp);
+        strTmp[strlen(strTmp)-1] = '\0';
+
         strcpy(strSave, strTmp);
+        strcpy(strTmp, regular_form(strTmp));
         
         command = strtok(strTmp, " ");
         cCase  = commandCase(command);    
 
-        printf("command is %s\n", command);
-        printf("%d\n", cCase);
-
         switch(cCase){
             case HELP: {
-                           //printf("HELP\n");
                            hisConnect(strSave);
                            hFunc();
                            break;
                         }
             case DIRECTORY: {
-                                //printf("DIRECTORY\n");
                                 hisConnect(strSave);
                                 dFunc();
                                 break;
                             }
             case QUIT: {
-                           //printf("BYE!\n");
                            return 0;
                        }
             case HISTORY: {
-                            //printf("HISTORY\n");
                             hisConnect(strSave);
                             hiFunc();
                             break;
                           }
 
             case DUMP: {
-                           printf("DUMP\n");
-                           strcpy(strTmp, strSave);
-                           printf("strTmp is %s\n", strTmp);
-                           command = strtok(strTmp, " ");
-                           printf("command is %s\n", command);
-                           start = strtok(NULL, ",");
+                           hisConnect(strSave);
+                           start = strtok(NULL, " ");
                            if(!start){ // dump
-
+                               duFunc(NULL, NULL);
+                               continue;
                            }
-                           printf("start is %s\n", start);
                            end = strtok(NULL, "\0");
                            if(!end){    // dump start
-
+                                duFunc(start, NULL);
+                                continue;
                            }
-                           printf("end is %s\n", end);
-                           /*
-                           for(int i=1; i<strlen(end); i++){
-                               strcpy(end[i-1], end[i]);
-                           }
-                           printf("deleted end is %s", end);
-                           */
+                           
                            // dump start end
+                           duFunc(start, end);
                            
                            break;
                        }
             case EDIT: {
-                           printf("EDIT\n");
+                           hisConnect(strSave);
+                           addr = strtok(NULL, " ");
+                           val = strtok(NULL, " ");
+                           eFunc(addr, val);
                            break;
                        }
             case FILL: {
-                           printf("FILL\n");
+                           hisConnect(strSave);
+                           start = strtok(NULL, " ");
+                           end = strtok(NULL, " ");
+                           val = strtok(NULL, " ");
+                           fFunc(start, end, val);
                            break;
                        }
             case RESET: {
-                            printf("RESET\n");
+                            resetFunc();
                             break;
                         }
             case OPCODE: {
@@ -102,15 +101,13 @@ int main(){
 }
 
 char* regular_form(char* str){
-
-    printf("%s\n", str);
-    str[strlen(str)-1] = '\0';
+    int idx=0;
+    char* tmpStr = (char*)malloc(strlen(str)*sizeof(char));
     for(int i=0; str[i]!='\0'; i++){
-        if(str[i]==','){
-            strcpy(str, str+1);
-            str--;
+        if(str[i]!=','){
+            tmpStr[idx] = str[i];
+            idx++;
         }
     }
-    printf("%s\n", str);
-    return str;
+    return tmpStr;
 }
