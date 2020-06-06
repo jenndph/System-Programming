@@ -1,0 +1,12 @@
+CC = gcc
+CFLAGS = -W -Wall
+TARGET = 20181614.out
+OBJECTS = 20181614.o shell.o memory.o opcode.o assembler.o assembler2.o loader.o run.o
+
+all: $(TARGET)
+
+$(TARGET): $(OBJECTS)
+	$(CC) $(CFLAGS) -o $@ $^
+
+clean:
+	rm -f $(OBJECTS) $(TARGET)
